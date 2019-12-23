@@ -4,6 +4,10 @@
 #include <string>
 #include <vector>
 
+#include "dpll.h"
+#include "config.h"
+#include "trail.h"
+
 template<typename T>
 std::ostream& operator<<(std::ostream& os, const std::vector<T>& v) {
 	os << "[";
@@ -41,5 +45,19 @@ int main(int argc, char* argv[]) {
 	assert(argc == 2);
 	auto clauses = parse_dimacs(argv[1]);
 
-	std::cout << clauses << std::endl;
+#ifdef VERBOSE
+	//std::cout << clauses << std::endl;
+#endif
+
+  int num_vars = -1;
+  std::vector<int> assignment;
+  int result = solve_dpll(clauses, &num_vars, &assignment);
+
+  if (result) {
+    std::cout << "sat " << assignment << std::endl;
+    return 10;
+  } else {
+    std::cout << "unsat" << std::endl;
+    return 20;
+  }
 }
