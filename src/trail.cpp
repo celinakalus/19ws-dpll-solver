@@ -27,7 +27,7 @@ void Trail::pop(int &x, int &v, int &b) {
   is_assigned[x] = 0;
 
 #ifdef VERBOSE
-  //std::cout << "Popping " << x << " of value " << v << " off the trail." << std::endl;
+  std::cout << "Popping " << x << " of value " << v << " off the trail." << std::endl;
 #endif
 }
 
@@ -41,7 +41,7 @@ void Trail::push(int x, int v, int b) {
     assignment[x] = v;
 
 #ifdef VERBOSE
-    //std::cout << "Pushing " << x << " with value " << v << " to the trail." << std::endl;
+    std::cout << "Pushing " << x << " with value " << v << " to the trail." << std::endl;
 #endif
   } else {
 #ifdef VERBOSE

@@ -9,13 +9,33 @@
 #define VAR_INDEX(x) (ABS(x) - 1)
 #define NEGATIVE(x) (x < 0 ? 1 : 0) 
 
+int is_clause_unsatisfied(std::vector<int> clause, Trail trail) {
+  for (int i = 0; i < clause.size(); i++) {
+    int x = VAR_INDEX(clause[i]);
+    int neg = NEGATIVE(clause[i]);
+    int v = trail.variable_value(x);
+
+    if (!trail.variable_assigned(x)) {
+      return 0;
+    } else if (v ^ neg) { 
+      return 0; 
+    }
+  }
+
+  return 1;
+}
+
 int is_clause_satisfied(std::vector<int> clause, Trail trail) {
   for (int i = 0; i < clause.size(); i++) {
     int x = VAR_INDEX(clause[i]);
     int neg = NEGATIVE(clause[i]);
     int v = trail.variable_value(x);
 
-    if (v ^ neg) { return 1; }
+    if (!trail.variable_assigned(x)) {
+      continue;
+    } else if (v ^ neg) { 
+      return 1; 
+    }
   }
 
   return 0;
@@ -24,6 +44,41 @@ int is_clause_satisfied(std::vector<int> clause, Trail trail) {
 int is_formula_satisfied(std::vector<std::vector<int>> clauses, Trail trail) {
   for (int i = 0; i < clauses.size(); i++) {
     if (!is_clause_satisfied(clauses[i], trail)) { return 0; }
+  }
+
+  return 1;
+}
+
+int backtrack(Trail *trail) {
+  while (!trail->empty()) {
+    int x, v, b;
+    trail->pop(x, v, b);
+
+    if (!b) {
+      trail->push(x, !v, 1);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int decide(int num_vars, Trail *trail) {
+  for (int x = 0; x < num_vars; x++) {
+    if (!trail->variable_assigned(x)) {
+      trail->push(x, 0, 0);
+      return 1;
+    }
+  }
+
+  return 0;
+}
+
+int BCP(std::vector<std::vector<int>> clauses, Trail *trail) {
+  // todo: look for unit clauses, extend trail accordingly
+
+  for (int i = 0; i < clauses.size(); i++) {
+    if (is_clause_unsatisfied(clauses[i], *trail)) { return 0; }
   }
 
   return 1;
@@ -51,18 +106,22 @@ int solve_dpll(std::vector<std::vector<int>> clauses, int *_num_vars, std::vecto
 
   Trail trail (num_vars);
 
-  for (int test = 0; test < (1 << num_vars); test++) {
-    int pattern = test;
-    for (int x = 0; x < num_vars; x++) {
-      trail.push(x, pattern & 1, 0);
-      pattern = pattern >> 1;
+  if (!BCP(clauses, &trail)) { 
+    std::cout << "UNSAT in first BCP" << std::endl;
+    return 0; 
+  }
+
+  while (true) {
+    if (!decide(num_vars, &trail)) { 
+      std::cout << "SAT in iterative decide" << std::endl;
+      return 1; 
     }
 
-    if (is_formula_satisfied(clauses, trail)) { return 1; }
-
-    for (int x = 0; x < num_vars; x++) {
-      int a, b, c;
-      trail.pop(a, b, c);
+    while (!BCP(clauses, &trail)) {
+      if (!backtrack(&trail)) { 
+        std::cout << "UNSAT in iterative BCP" << std::endl;
+        return 0; 
+      }
     }
   }
 
