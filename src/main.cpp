@@ -3,6 +3,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
+#include <ratio>
+#include <chrono>
 
 #include "dpll.h"
 #include "config.h"
@@ -42,7 +45,9 @@ std::vector<std::vector<int>> parse_dimacs(std::string filename) {
 }
 
 int main(int argc, char* argv[]) {
-	assert(argc == 2);
+	using namespace std::chrono;
+
+  assert(argc == 2);
 	auto clauses = parse_dimacs(argv[1]);
 
 #ifdef VERBOSE
@@ -51,7 +56,19 @@ int main(int argc, char* argv[]) {
 
   int num_vars = -1;
   std::vector<int> assignment;
+  
+  high_resolution_clock::time_point begin, end;
+  
+  begin = high_resolution_clock::now();
   int result = solve_dpll(clauses, &num_vars, &assignment);
+  end = high_resolution_clock::now();
+
+  duration<double> difftime = duration_cast<duration<double>>(end - begin);
+
+#ifdef VERBOSE
+  std::cout.precision(3);
+  std::cout << "time: " << std::fixed << difftime.count() << std::endl;
+#endif
 
   if (result) {
     std::cout << "sat " << assignment << std::endl;
