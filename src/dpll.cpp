@@ -162,6 +162,13 @@ std::vector<int> *DPLL::solve() {
       std::vector<int> *assignment = new std::vector<int>(num_vars);
       
       // todo: find actual assignment
+      for (int x = 0; x < num_vars; x++) {
+        if (trail->variable_assigned(x)) {
+          (*assignment)[x] = trail->variable_value(x);
+        } else {
+          (*assignment)[x] = 0;
+        }
+      }
       
       return assignment; 
     }
