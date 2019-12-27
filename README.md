@@ -13,3 +13,7 @@ DPLL Solver
 
 ```./dpll-solver benchmarks/example-15.cnf```
 *Runtime:* 56.476s
+
+### Version Fri Dec 27 13:16:18 2019
+```timeout 10s ./benchmark.sh```
+*Progress:* 83/100 Benchmarks (in 10 seconds)
