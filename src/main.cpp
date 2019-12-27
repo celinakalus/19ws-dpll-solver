@@ -54,13 +54,12 @@ int main(int argc, char* argv[]) {
 	//std::cout << clauses << std::endl;
 #endif
 
-  int num_vars = -1;
-  std::vector<int> assignment;
-  
+
   high_resolution_clock::time_point begin, end;
   
   begin = high_resolution_clock::now();
-  int result = solve_dpll(clauses, &num_vars, &assignment);
+  DPLL *dpll = new DPLL(&clauses);
+  std::vector<int> *assignment = dpll->solve();
   end = high_resolution_clock::now();
 
   duration<double> difftime = duration_cast<duration<double>>(end - begin);
@@ -70,8 +69,8 @@ int main(int argc, char* argv[]) {
   std::cout << "time: " << std::fixed << difftime.count() << std::endl;
 #endif
 
-  if (result) {
-    std::cout << "sat " << assignment << std::endl;
+  if (assignment != NULL) {
+    std::cout << "sat " << *assignment << std::endl;
     return 10;
   } else {
     std::cout << "unsat" << std::endl;
