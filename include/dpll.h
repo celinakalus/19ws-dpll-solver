@@ -9,8 +9,11 @@ class DPLL {
 private:
   int is_clause_satisfied(int clause);
   int is_clause_unsatisfied(int clause);
-  int is_clause_unit(int clause);
+  int is_clause_unit(int clause, int *j);
   
+  int trail_push(int x, int v, int b);
+  int trail_pop(int &x, int &v, int &b);
+
   int backtrack();
   int decide();
   int BCP();

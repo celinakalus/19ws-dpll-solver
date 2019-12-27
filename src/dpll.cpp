@@ -41,13 +41,46 @@ int DPLL::is_clause_satisfied(int c) {
   return 0;
 }
 
+int DPLL::is_clause_unit(int c, int *index) {
+  int unassigned_count = 0;
+
+  for (int i = 0; i < (*clauses)[c].size(); i++) {
+    int x = VAR_INDEX((*clauses)[c][i]);
+    int neg = NEGATIVE((*clauses)[c][i]);
+    int v = trail->variable_value(x);
+
+    if (!trail->variable_assigned(x) && unassigned_count < 1) {
+      unassigned_count++;
+      *index = i;
+    } else if (!trail->variable_assigned(x)) {
+      return 0;
+    } else if (v ^ neg) { 
+      return 0; 
+    }
+  }
+
+  return 1;
+}
+
+int DPLL::trail_push(int x, int v, int b) {
+  trail->push(x, v, b);
+
+  return 0;
+}
+
+int DPLL::trail_pop(int &x, int &v, int &b) {
+  trail->pop(x, v, b);
+
+  return 0;
+}
+
 int DPLL::backtrack() {
   while (!trail->empty()) {
     int x, v, b;
-    trail->pop(x, v, b);
+    trail_pop(x, v, b);
 
     if (!b) {
-      trail->push(x, !v, 1);
+      trail_push(x, !v, 1);
       return 1;
     }
   }
@@ -58,7 +91,7 @@ int DPLL::backtrack() {
 int DPLL::decide() {
   for (int x = 0; x < num_vars; x++) {
     if (!trail->variable_assigned(x)) {
-      trail->push(x, 0, 0);
+      trail_push(x, 0, 0);
       return 1;
     }
   }
@@ -68,9 +101,26 @@ int DPLL::decide() {
 
 int DPLL::BCP() {
   // todo: look for unit clauses, extend trail accordingly
+  while (true) {
+    int unit_count = 0;
 
-  for (int i = 0; i < clauses->size(); i++) {
-    if (is_clause_unsatisfied(i)) { return 0; }
+    for (int c = 0; c < clauses->size(); c++) {
+      if (is_clause_unsatisfied(c)) { return 0; }
+      
+      int i;
+      if (is_clause_unit(c, &i)) {
+        int x = VAR_INDEX((*clauses)[c][i]);
+        int neg = NEGATIVE((*clauses)[c][i]);
+
+        if (neg) {
+          trail_push(x, 0, 1);
+        } else {
+          trail_push(x, 1, 1);
+        }
+      }
+    }
+
+    if (unit_count == 0) { break; }
   }
 
   return 1;
